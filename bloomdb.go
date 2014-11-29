@@ -9,26 +9,37 @@ import (
 type BloomDatabase struct {
 	sqlConnStr string
 	searchHosts []string
+	sharedSearch *elastigo.Conn
+	sharedDB *sql.DB
 }
 
 func (bdb *BloomDatabase) SqlConnection() (*sql.DB, error) {
-	db, err := sql.Open("postgres", bdb.sqlConnStr)
-	if err != nil {
-		return nil, err
+	if bdb.sharedDB == nil {
+		db, err := sql.Open("postgres", bdb.sqlConnStr)
+		if err != nil {
+			return nil, err
+		}
+		bdb.sharedDB = db
 	}
 
-	return db, nil
+	return bdb.sharedDB, nil
 }
 
 func (bdb *BloomDatabase) SearchConnection() (*elastigo.Conn) {
-	conn := elastigo.NewConn()
-	conn.SetHosts(bdb.searchHosts)
-	return conn
+	if bdb.sharedSearch == nil {
+		conn := elastigo.NewConn()
+		conn.SetHosts(bdb.searchHosts)
+		bdb.sharedSearch = conn
+	}
+
+	return bdb.sharedSearch
 }
 
 func CreateDB () *BloomDatabase {
 	return &BloomDatabase {
 		viper.GetString("sqlConnStr"),
 		viper.GetStringSlice("searchHosts"),
+		nil,
+		nil,
 	}
 }
