@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/lib/pq"
 	"text/template"
+	"time"
 	"fmt"
 )
 
@@ -20,6 +21,8 @@ var fns = template.FuncMap{
 type upsertInfo struct {
 	Table   string
 	Columns []string
+	CreatedAt string
+	UpdatedAt string
 }
 
 func buildQuery(table string, columns []string) (string, error) {
@@ -28,7 +31,8 @@ func buildQuery(table string, columns []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	info := upsertInfo{table, columns}
+	now := time.Now().UTC().Format(time.RFC3339)
+	info := upsertInfo{table, columns, now, now}
 	err = t.Execute(buf, info)
 	if err != nil {
 		return "", err
