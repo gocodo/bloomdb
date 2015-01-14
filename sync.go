@@ -5,30 +5,25 @@ import (
 	"database/sql"
 	"github.com/lib/pq"
 	"text/template"
+	"time"
 	"fmt"
 )
 
-var fns = template.FuncMap{
-	"eq": func(x, y interface{}) bool {
-		return x == y
-	},
-	"sub": func(y, x int) int {
-		return x - y
-	},
-}
-
-type upsertInfo struct {
+type syncInfo struct {
 	Table   string
 	Columns []string
+	CreatedAt string
+	UpdatedAt string
 }
 
-func buildQuery(table string, columns []string) (string, error) {
+func buildSyncQuery(table string, columns []string) (string, error) {
 	buf := new(bytes.Buffer)
-	t, err := template.New("upsert.sql.template").Funcs(fns).Parse(upsertSql)
+	t, err := template.New("sync.sql.template").Funcs(fns).Parse(syncSql)
 	if err != nil {
 		return "", err
 	}
-	info := upsertInfo{table, columns}
+	now := time.Now().UTC().Format(time.RFC3339)
+	info := syncInfo{table, columns, now, now}
 	err = t.Execute(buf, info)
 	if err != nil {
 		return "", err
@@ -36,8 +31,8 @@ func buildQuery(table string, columns []string) (string, error) {
 	return buf.String(), nil
 }
 
-func Upsert(db *sql.DB, table string, columns []string, rows chan []string) error {
-	query, err := buildQuery(table, columns)
+func Sync(db *sql.DB, table string, columns []string, rows chan []string) error {
+	query, err := buildSyncQuery(table, columns)
 	if err != nil {
 		return err
 	}
