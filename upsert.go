@@ -21,18 +21,19 @@ var fns = template.FuncMap{
 type upsertInfo struct {
 	Table   string
 	Columns []string
+	ParentKey string
 	CreatedAt string
 	UpdatedAt string
 }
 
-func buildQuery(table string, columns []string) (string, error) {
+func buildQuery(table string, columns []string, parentKey string) (string, error) {
 	buf := new(bytes.Buffer)
 	t, err := template.New("upsert.sql.template").Funcs(fns).Parse(upsertSql)
 	if err != nil {
 		return "", err
 	}
 	now := time.Now().UTC().Format(time.RFC3339)
-	info := upsertInfo{table, columns, now, now}
+	info := upsertInfo{table, columns, parentKey, now, now}
 	err = t.Execute(buf, info)
 	if err != nil {
 		return "", err
@@ -40,8 +41,8 @@ func buildQuery(table string, columns []string) (string, error) {
 	return buf.String(), nil
 }
 
-func Upsert(db *sql.DB, table string, columns []string, rows chan []string) error {
-	query, err := buildQuery(table, columns)
+func Upsert(db *sql.DB, table string, columns []string, rows chan []string, parentKey string) error {
+	query, err := buildQuery(table, columns, parentKey)
 	if err != nil {
 		return err
 	}

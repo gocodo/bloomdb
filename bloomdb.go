@@ -3,7 +3,7 @@ package bloomdb
 import (
 	"database/sql"
 	"github.com/spf13/viper"
-	elastigo "github.com/mattbaird/elastigo/lib"
+	elastigo "github.com/untoldone/elastigo/lib"
 )
 
 type BloomDatabase struct {

@@ -42,7 +42,12 @@ func Sync(db *sql.DB, table string, columns []string, rows chan []string) error 
 		return err
 	}
 
-	_, err = txn.Exec("CREATE TEMP TABLE " + table + "_temp(LIKE " + table + ") ON COMMIT DROP;")
+	_, err = db.Exec("DROP TABLE IF EXISTS " + table + "_temp;")
+	if err != nil {
+		return err
+	}
+
+	_, err = txn.Exec("CREATE TABLE " + table + "_temp(LIKE " + table + " INCLUDING INDEXES);")
 	if err != nil {
 		return err
 	}
@@ -74,12 +79,27 @@ func Sync(db *sql.DB, table string, columns []string, rows chan []string) error 
 		return err
 	}
 
-	_, err = txn.Exec(query)
+	err = txn.Commit()
 	if err != nil {
 		return err
 	}
 
-	err = txn.Commit()
+	_, err = db.Exec("analyze " + table + "_temp (id, revision)")
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec("analyze " + table + " (id, revision)")
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(query)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec("DROP TABLE " + table + "_temp;")
 	if err != nil {
 		return err
 	}
