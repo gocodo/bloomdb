@@ -35,7 +35,7 @@ func (bdb *BloomDatabase) SearchConnection() (*elastigo.Conn) {
 	return bdb.sharedSearch
 }
 
-func CreateDB () *BloomDatabase {
+func CreateDB() *BloomDatabase {
 	return &BloomDatabase {
 		viper.GetString("sqlConnStr"),
 		viper.GetStringSlice("searchHosts"),
