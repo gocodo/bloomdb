@@ -95,7 +95,7 @@ func (bdb *BloomDatabase) SearchTypeWithNameAndKey(name string, apiKey string) (
 			ON search_types.id = keys_to_search_types.search_type_id
 			LEFT JOIN api_keys
 			ON keys_to_search_types.api_key_id = api_keys.id
-			WHERE key = $1 AND search_types.name = $2
+			WHERE (key = $1 OR search_types.public = true) AND search_types.name = $2
 		`, apiKey, name).Scan(&searchType.Name, &searchType.LastUpdated, &searchType.LastUpdated, &searchType.Public)
 	if err == sql.ErrNoRows {
 		return nil, false, nil
