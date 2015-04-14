@@ -53,7 +53,7 @@ func Sync(db *sql.DB, table string, columns []string, rows chan []string) error 
 	}
 
 	columns = append([]string{ "bloom_created_at"}, columns...)
-
+	
 	stmt, err := txn.Prepare(pq.CopyIn(table + "_temp", columns...))
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func Sync(db *sql.DB, table string, columns []string, rows chan []string) error 
 
 		_, err = stmt.Exec(row...)
 		if err != nil {
-			log.Println("table", table, "row", row)
+			log.Println("table", table, "row", row, "columns", columns)
 			return err
 		}
 	}
