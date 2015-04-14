@@ -13,6 +13,11 @@ type BloomDatabase struct {
 	sharedDB *sql.DB
 }
 
+func (bdb *BloomDatabase) NewSqlConnection() (*sql.DB, error) {
+	db, err := sql.Open("postgres", bdb.sqlConnStr)
+	return db, err
+}
+
 func (bdb *BloomDatabase) SqlConnection() (*sql.DB, error) {
 	if bdb.sharedDB == nil {
 		db, err := sql.Open("postgres", bdb.sqlConnStr)
