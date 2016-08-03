@@ -48,3 +48,12 @@ func CreateDB() *BloomDatabase {
 		nil,
 	}
 }
+
+func DBFromConfig(sqlConnStr string, searchHosts []string) *BloomDatabase {
+	return &BloomDatabase {
+		sqlConnStr,
+		searchHosts,
+		nil,
+		nil,
+	}
+}
